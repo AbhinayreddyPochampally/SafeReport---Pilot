@@ -386,12 +386,14 @@ export async function GET(req: NextRequest) {
     type: "buffer",
   }) as Buffer
 
-  // Cast to Uint8Array so NextResponse accepts it as a standard BodyInit.
-  // Node Buffer IS a Uint8Array underneath; this is a zero-copy view change.
-  const body = new Uint8Array(
-    buf.buffer,
-    buf.byteOffset,
-    buf.byteLength,
+  // Wrap in a Blob — NextResponse accepts Blob as BodyInit across all of
+  // the type libs Next 14 ships against, which a raw Buffer / Uint8Array
+  // doesn't satisfy under stricter build-time checks.
+  const body = new Blob(
+    [new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength)],
+    {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    },
   )
 
   const stamp = new Date().toISOString().slice(0, 10)
@@ -404,7 +406,7 @@ export async function GET(req: NextRequest) {
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${fileName}"`,
       "Cache-Control": "no-store",
-      "Content-Length": String(body.byteLength),
+      "Content-Length": String(body.size),
     },
   })
 }
