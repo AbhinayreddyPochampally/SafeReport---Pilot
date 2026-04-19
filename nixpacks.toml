@@ -1,0 +1,15 @@
+# Nixpacks config for SafeReport (Next.js 14 App Router on Railway).
+# Pins Node 20 and explicit build/start phases so the builder doesn't
+# fall back to a generic Node detector that misses `next build`.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm"]
+
+[phases.install]
+cmds = ["npm ci --prefer-offline --no-audit --no-fund"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start"
