@@ -26,7 +26,7 @@
     "framer-motion": "^11.5.4",
     "jose": "^5.9.3",
     "lucide-react": "^0.447.0",
-    "next": "14.2.13",
+    "next": "^14.2.35",
     "next-pwa": "^5.6.0",
     "openai": "^4.67.0",
     "pdf-lib": "^1.17.1",
