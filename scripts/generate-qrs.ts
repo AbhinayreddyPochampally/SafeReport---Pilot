@@ -27,11 +27,16 @@ loadEnv({ path: ".env.local" })
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+// Trim whitespace defensively — a stray trailing space in .env.local or in a
+// Railway env var turns into `%20` when the URL gets concatenated with the
+// SAP code, and mobile browsers won't forgive that (desktop sometimes does).
 const APP_URL = (
   process.env.APP_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
   "http://localhost:3000"
-).replace(/\/$/, "")
+)
+  .trim()
+  .replace(/\/$/, "")
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error(
