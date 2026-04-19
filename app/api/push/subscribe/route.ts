@@ -53,7 +53,9 @@ export async function POST(req: NextRequest) {
 
   const admin = createSupabaseAdminClient()
 
-  let row: Record<string, unknown> = {
+  // `row` fields are mutated below based on role; the binding itself
+  // never gets reassigned, so const is correct here.
+  const row: Record<string, unknown> = {
     role,
     endpoint,
     p256dh,

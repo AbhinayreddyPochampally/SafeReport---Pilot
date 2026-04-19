@@ -1,6 +1,5 @@
 import Link from "next/link"
 import {
-  AlertCircle,
   ArrowRight,
   CheckCircle2,
   ChevronRight,

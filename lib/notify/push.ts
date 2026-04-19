@@ -17,8 +17,6 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin"
  * the table doesn't accumulate dead endpoints.
  */
 
-type Role = "manager" | "ho"
-
 type PushPayload = {
   title: string
   body: string
