@@ -15,6 +15,7 @@ import {
 } from "recharts"
 import {
   CalendarRange,
+  Download,
   Filter,
   Loader2,
   RotateCcw,
@@ -134,6 +135,8 @@ export function AnalyticsClient() {
   const [data, setData] = useState<Payload | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -188,6 +191,55 @@ export function AnalyticsClient() {
     setCategories([])
   }
 
+  async function downloadXlsx() {
+    if (downloading) return
+    setDownloading(true)
+    setDownloadError(null)
+    try {
+      // Mirror the same query-string shape the analytics fetch uses so the
+      // spreadsheet reflects exactly what's on screen.
+      const qs = new URLSearchParams()
+      qs.set("from", from)
+      qs.set("to", to)
+      for (const b of brands) qs.append("brand", b)
+      for (const c of cities) qs.append("city", c)
+      for (const k of categories) qs.append("category", k)
+
+      const res = await fetch(`/api/excel/export?${qs.toString()}`, {
+        cache: "no-store",
+      })
+      if (!res.ok) {
+        // Try to surface the server's message; fall back to the HTTP status.
+        let msg = `HTTP ${res.status}`
+        try {
+          const j = (await res.json()) as { error?: string }
+          if (j?.error) msg = j.error
+        } catch {
+          /* not json */
+        }
+        throw new Error(msg)
+      }
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `safereport-${new Date().toISOString().slice(0, 10)}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      // Release the blob URL on the next tick so Safari has a chance to start
+      // the download before we revoke.
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (e) {
+      setDownloadError(
+        e instanceof Error ? e.message : "Couldn't download.",
+      )
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const anyFilter = brands.length + cities.length + categories.length > 0
 
   return (
@@ -201,13 +253,36 @@ export function AnalyticsClient() {
             Pilot-wide trends. Narrow the view with the filters below.
           </p>
         </div>
-        {busy ? (
-          <span className="inline-flex items-center gap-2 text-xs text-slate-500">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Refreshing…
-          </span>
-        ) : null}
+        <div className="flex items-center gap-3">
+          {busy ? (
+            <span className="inline-flex items-center gap-2 text-xs text-slate-500">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Refreshing…
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={downloadXlsx}
+            disabled={downloading}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-700 text-white text-sm font-medium hover:bg-indigo-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {downloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Download className="h-4 w-4" aria-hidden />
+            )}
+            {downloading ? "Preparing…" : "Download .xlsx"}
+          </button>
+        </div>
       </div>
+      {downloadError ? (
+        <div
+          role="alert"
+          className="rounded-md bg-orange-50 border border-orange-200 px-3 py-2 text-sm text-orange-700 mb-4"
+        >
+          Download failed: {downloadError}
+        </div>
+      ) : null}
 
       {/* ---- Filter panel ---- */}
       <section
