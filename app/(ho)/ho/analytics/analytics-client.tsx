@@ -20,6 +20,7 @@ import {
   Loader2,
   RotateCcw,
   TrendingUp,
+  type LucideIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { CATEGORIES } from "@/lib/categories"
@@ -581,7 +582,7 @@ function ChartCard({
   title: string
   subtitle?: string
   children: React.ReactNode
-  icon?: React.ComponentType<{ className?: string }>
+  icon?: LucideIcon
   fullWidth?: boolean
 }) {
   return (

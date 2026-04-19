@@ -7,6 +7,7 @@ import {
   FileText,
   Inbox,
   RotateCcw,
+  type LucideIcon,
 } from "lucide-react"
 import { requireHoSession } from "@/lib/ho-auth"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
@@ -313,7 +314,7 @@ function SummaryCard({
   accent: AccentKey
   label: string
   value: number
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
+  icon: LucideIcon
   href?: string
 }) {
   const s = ACCENT_STYLES[accent]
